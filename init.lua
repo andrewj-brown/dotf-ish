@@ -19,11 +19,11 @@ vim.opt.rtp:prepend(lazypath)
 
 
 -- GENERAL VIM SETTINGS
--- tabs are 4 spaces, and expand them out instead of using \t
+-- tabs are 2 spaces (chromium style)
 vim.opt.expandtab = true
-vim.opt.softtabstop = 4
-vim.opt.tabstop = 4
-vim.opt.shiftwidth = 4
+vim.opt.softtabstop = 2
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
 
 -- visual settings
 vim.opt.number = true
@@ -31,6 +31,7 @@ vim.opt.ruler = true
 vim.opt.background = "dark"
 vim.opt.showmatch = true
 vim.opt.wildmenu = true
+vim.opt.cursorline = true
 
 
 -- PLUGINS (VIA LAZY)
@@ -57,10 +58,61 @@ require("lazy").setup({
         lazy = false,
         priority = 1000,
         opts = {},
+    },
+    {
+        "neovim/nvim-lspconfig",
+        version = "*",
+        lazy = false,
+        opts = {},
+        config = function() end
+    },
+    {
+        "hrsh7th/nvim-cmp",
+        version = "*",
+        lazy = false,
+        opts = {},
+        config = function() end
+    },
+    {
+        "hrsh7th/cmp-nvim-lsp",
+        version = "*",
+        lazy = false,
+        opts = {},
+        config = function() end
+    },
+    {
+        "hrsh7th/cmp-nvim-lsp-signature-help",
+        version = "*",
+        lazy = false,
+        opts = {},
+        config = function() end
+    },
+    {
+        "hrsh7th/cmp-buffer",
+        version = "*",
+        lazy = false,
+        opts = {},
+        config = function() end
+    },
+    {
+        "hrsh7th/cmp-path",
+        version = "*",
+        lazy = false,
+        opts = {},
+        config = function() end
+    },
+    {
+        "prettier/vim-prettier",
+        version = "*",
+        lazy = false,
+        opts = {},
+        config = function() end,
+        run = "yarn install --frozen-lockfile --production",
+        ft = {"javascript", "typescript", "css", "scss", "json", "graphql", "markdown", "vue", "yaml", "html"}
     }
 })
 
--- setup for "tabs"
+-- setup for barbar
 vim.g.barbar_auto_setup = false
 require("bufferline").setup({
     animation = true,
@@ -73,7 +125,7 @@ require("bufferline").setup({
         NvimTree = true,
     }
 });
--- setup for the file window
+-- setup for nvim-tree
 require("nvim-tree").setup({
     sort_by = "name",
 	view = {
@@ -92,22 +144,29 @@ require("nvim-tree").setup({
     hijack_cursor = true,
     hijack_unnamed_buffer_when_opening = false,
 });
+local lspconfig = require("lspconfig")
+lspconfig.pyright.setup {}
 
 
--- open nvim-tree (file explorer) on startup. don't focus it if you're opening a file.
+-- fun trick to open nvim-tree (file explorer) on startup.
+-- keep the cursor on the file if you're opening one
 local function open_nvim_tree(data)
     if (vim.fn.filereadable(data.file) == 1) then
         require("nvim-tree.api").tree.toggle({ focus = false })
     else
-        -- todo: if you're opening *nothing*, kill the empty buffer
+        -- todo: if you're opening *nothing* (i.e. just `nvim`), replace the empty buffer
+        -- instead of opening next to it
         require("nvim-tree.api").tree.open()
     end
     vim.api.nvim_exec_autocmds("BufWinEnter", {buffer = require("nvim-tree.view").get_bufnr()})
 end
 vim.api.nvim_create_autocmd({ "VimEnter" }, { callback = open_nvim_tree })
 
+
 -- theme
 vim.cmd[[colorscheme tokyonight-moon]]
+-- consider making custom colours if you're bored
+
 
 -- barbar bindings
 local map = vim.api.nvim_set_keymap
@@ -127,13 +186,13 @@ map('n', '<C-t>p', '<Cmd>BufferPin<CR>', opts)
 map('n', '<C-t>w', '<Cmd>BufferClose<CR>', opts)
 
 -- other bindings
-map('n', '<C-h>', '0', opts)            -- <C-h>            Home
-map('n', '<C-e>', '$', opts)            -- <C-e>            End
-                                        -- <C-f>,           PageDown
-                                        -- <C-b>,           PageUp
-                                        -- <C-w><Left>,     Switch Window Left
-                                        -- <C-w><Right>,    Switch Window Right
-map('n', '<C-d>', '<Cmd>yyp<CR>', opts) -- <C-d>            Duplicate Line
-                                        -- <Cmd>dd<CR>,     Delete Line
-                                        -- <C-w>s,          Split Window Horizontally
-                                        -- <C-w>v,          Split Window Vertically
+map('n', '<C-h>', '0', opts)    -- <C-h>            Home
+map('n', '<C-e>', '$', opts)    -- <C-e>            End
+                                -- <C-f>,           PageDown
+                                -- <C-b>,           PageUp
+                                -- <C-w><Left>,     Switch Window Left
+                                -- <C-w><Right>,    Switch Window Right
+map('n', '<C-d>', 'yyp', opts)  -- <C-d>            Duplicate Line
+                                -- dd,     Delete Line
+                                -- <C-w>s,          Split Window Horizontally
+                                -- <C-w>v,          Split Window Vertically
